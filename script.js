@@ -14,10 +14,10 @@
 */
 
 export const gameDetails = {   
-    title: 'Game Title',
-    desc: 'Welcome to the world of... here are some quick rules & concepts...',
-    author: 'Student Name',
-    cohort: 'SBPT-2022',
+    title: 'The World of Placeholder',
+    desc: 'Welcome to the world of Placeholder... here are some quick rules & concepts... More to come...',
+    author: 'Scott Lee',
+    cohort: 'PTSB-june-2023',
     startingRoomDescription: 'What you see before you is...',
     playerCommands: [
         // replace these with your games commands as needed
