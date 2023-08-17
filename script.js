@@ -18,16 +18,110 @@ export const gameDetails = {
     desc: 'Welcome to the world of Placeholder... here are some quick rules & concepts... More to come...',
     author: 'Scott Lee',
     cohort: 'PTSB-june-2023',
-    startingRoomDescription: 'What you see before you is...',
+    startingRoomDescription: 'What you see before you is a blue room.',
     playerCommands: [
         // replace these with your games commands as needed
-        'inspect', 'view', 'look', 'pickup',
+        // 'inspect', 'view', 'look', 'pickup',
+        'locate', 'view', 'pick up',
     ]
     // Commands are basic things that a player can do throughout the game besides possibly moving to another room. This line will populate on the footer of your game for players to reference. 
     // This shouldn't be more than 6-8 different commands.
 }
 
-// Your code here
+class Item {
+    constructor(name, description, location) {
+        this.name = name;
+        this.description = description;
+        this.location = location;
+    };
+
+    interact() {
+        return `You have interacted with ${this.name}`;
+    };
+};
+
+class Loc extends Item {
+    constructor(name, description, exits, itemsWithin) {
+        super(name, description);
+        this.exits = exits;
+        this[`items within`] = itemsWithin;
+    };
+};
+
+const blueBox = new Item(
+    `a blue box`
+    ,
+    `a blue box made of paper`
+    ,
+    `the blue room`
+    );
+const yellowPyramid = new Item(
+    `a yellow pyramid`
+    ,
+    `a yellow pyramid made of stone`
+    ,
+    `the yellow room`
+    );
+const redBag = new Item(
+    `a red bag`
+    ,
+    `a red bag made of cloth`
+    ,
+    `the red room`
+    );
+const greenCylinder = new Item(
+    `a green cylinder`
+    ,
+    `a green cylinder made of glass`
+    ,
+    `the green room`
+    );
+const blueRoom = new Loc(
+    `a blue room`
+    ,
+    `a tranquil room painted blue`
+    ,
+    [`a yellow room`]
+    ,
+    [blueBox]
+    );
+const yellowRoom = new Loc(
+    'a yellow room'
+    ,
+    `a painfully bright yellow room`
+    ,
+    [`a blue room`, `a red room`]
+    ,
+    [yellowPyramid]
+    );
+const redRoom = new Loc(
+    `a red room`
+    ,
+    `an uneasy room painted in red`
+    ,
+    [`a yellow room`, `a green room`]
+    ,
+    [redBag]
+    );
+const greenRoom = new Loc(
+    'a green room'
+    ,
+    `a room of nature, painted green`
+    ,
+    [`a red room`]
+    ,
+    [greenCylinder]
+    );
+// console.log(blueBox);
+
+const locationDict = {blueRoom, yellowRoom, redRoom, greenRoom};
+
+// console.log(locationDict.yellowRoom['items within']);
+
+// function test(dict, value) {
+//     console.log(locationDict[dict][value]);
+// };
+// test('yellowRoom', 'items within');
 
 export const domDisplay = (playerInput) => {
     /* 
