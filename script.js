@@ -54,6 +54,7 @@ class Loc extends Item {
         // return this[`items within`].name.includes(item);
 
         // Look, ma! I made the functionality of a .includes() method with a .find() method!
+        // checks if passed item variable matches an item in the object this method is called for
         if ((this[`items within`].find(seeking => seeking.name === item) == null)) {
             return false;
         } else {
@@ -105,7 +106,8 @@ const blueRoom = new Loc(
     ,
     [`the yellow room`]
     ,
-    [blueBox]
+    // ! testing - yellowPyramid needs to be removed
+    [blueBox, yellowPyramid]
     );
 const yellowRoom = new Loc(
     'the yellow room'
@@ -139,6 +141,7 @@ console.log(blueRoom.contains(`the blue box`));
 const locationDict = {blueRoom, yellowRoom, redRoom, greenRoom};
 const playerInventory = [];
 
+// * testing
 console.log(greenRoom.contains(`the blue box`));
 console.log(greenRoom.contains(`the blue box`));
 console.log(locationDict);
@@ -159,7 +162,7 @@ const roomState = {
 
 let currentRoom = `the blue room`;
 console.log(roomState[currentRoom])
-/* 
+/* pseudo code for state change
 'the yellow room'
 if roomState[currentRoom].includes(target)
 */
@@ -208,6 +211,7 @@ export const domDisplay = (playerInput) => {
         case `look at`:
             break;
         case `pick up`:
+            inputResponse = pickUp(target);
             break;
         default:
             inputResponse = `I don't know how to ${playerInput}`;
@@ -227,15 +231,83 @@ console.log(parseInput('move to the red room'));
 
 // console.log(isInRoom(blueRoom, 'the blue box'))
 
-function pickUp() {
-    if ()
-    
-    /* 
-    if item ffffffffff
+function pickUp(itemName) {
+    /* Pseudo code attempt
+    if item is in current room
+    if(locationDict.currentRoom.itemName)
+        pickup item
+    else
+        log that item isn't here
     */
+
+    // ! This is why this(below) doesn't work. currentRoom (`the blue room`) is equal to the object's name ( blueRoom {name: `the blue room`} )
+    // ! It sent me on a wild tangent to create roomVariable() and itemVariable() to generate the needed variable names
+    // if (locationDict.currentRoom[`items within`]) {
+    // };
+    
+    // if the item is in the room
+    if (locationDict[roomVariable(currentRoom)].contains(itemName)) {
+
+        // * testing
+        console.log(`inventory before`, playerInventory);
+        console.log(`room items before`, locationDict[roomVariable(currentRoom)][`items within`]);
+
+        //add item to inventory
+        playerInventory.push(locationDict[roomVariable(currentRoom)][`items within`][itemVariable(currentRoom, itemName)]);
+
+        //remove item from room
+        locationDict[roomVariable(currentRoom)][`items within`].splice(itemVariable(currentRoom, itemName), 1);
+
+        // change location variable within item
+        locationDict[roomVariable(currentRoom)][`items within`][itemVariable(currentRoom, itemName)].location = `inventory`;
+
+        // * testing
+        console.log(`inventory after`, playerInventory);
+        console.log(`room items after`, locationDict[roomVariable(currentRoom)][`items within`]);
+
+        return `${itemName} has been placed in your inventory.`;
+
+    } else {
+        return `${itemName} won't budge.`;
+    };
+
 };
 
-console.log(pickUp('the blue box'));
-// console.logObject.keys(locationDict.blueRoom["items within"])
-console.log(locationDict.blueRoom[`items within`][0].name);
-blueRoom[`items within`]//possible use includes instead, or look at site >>>>
+// returns room object variable name
+function roomVariable(roomString) {
+    // keysArray holds room object variable names
+    let keysArray = Object.keys(locationDict);
+
+    //returns object variable name if it has the room name in its name property
+    return keysArray.find(key => locationDict[key].name === roomString)
+};
+
+// returns item object variable name
+function itemVariable(roomString, itemString) {
+
+    // ! doesn't work but should
+    // uses roomVariable() and returns item index number if it has the item name in its name property
+    // return locationDict[roomVariable(roomString)][`items within`].findIndex(itemIndex => {
+    //     locationDict[roomVariable(roomString)][`items within`][itemIndex].name === itemString;
+    // });
+
+    // for loop works. when it finds a matching string it returns the index number
+    for (let itemIndex in locationDict[roomVariable(roomString)][`items within`]) {
+        if (locationDict[roomVariable(roomString)][`items within`][itemIndex].name === itemString) {
+            return itemIndex;
+        };
+    };
+
+};
+
+// * testing logs
+console.log(`pickup() test`, pickUp('the blue box'));
+console.log(`object keys test`, Object.keys(locationDict));
+console.log(`item within locations access test`, locationDict.blueRoom[`items within`][1].name);
+console.log(`roomVariable() test`, locationDict[roomVariable(currentRoom)]);
+console.log(`itemVariable() test`, itemVariable(currentRoom, 'the blue box'));
+console.log(`roomVariable() and itemVariable() test`, locationDict.blueRoom[`items within`][itemVariable(currentRoom, `the yellow pyramid`)].name);
+console.log(locationDict[roomVariable(currentRoom)].contains(`the blue box`));
+
+// can I put more functions as methods
+// 
