@@ -22,17 +22,18 @@ export const gameDetails = {
     playerCommands: [
         // replace these with your games commands as needed
         // 'inspect', 'view', 'look', 'pickup',
-        'locate', 'view', 'pick up',
+        'move to', 'look at', 'pick up',
     ]
     // Commands are basic things that a player can do throughout the game besides possibly moving to another room. This line will populate on the footer of your game for players to reference. 
     // This shouldn't be more than 6-8 different commands.
 }
 
 class Item {
-    constructor(name, description, location) {
+    constructor(name, description, location, fixed) {
         this.name = name;
         this.description = description;
         this.location = location;
+        this.fixed = fixed;
     };
 
     interact() {
@@ -46,82 +47,122 @@ class Loc extends Item {
         this.exits = exits;
         this[`items within`] = itemsWithin;
     };
+
+    contains(item) {
+        // Includes doesn't work because it can't access the Item object's properties and still iterate on that object's parent array.
+        // Reference: https://stackoverflow.com/questions/8217419/how-to-determine-if-a-javascript-array-contains-an-object-with-an-attribute-that
+        // return this[`items within`].name.includes(item);
+
+        // Look, ma! I made the functionality of a .includes() method with a .find() method!
+        if ((this[`items within`].find(seeking => seeking.name === item) == null)) {
+            return false;
+        } else {
+            return true;
+        };
+    };
 };
 
 const blueBox = new Item(
-    `a blue box`
+    `the blue box`
     ,
     `a blue box made of paper`
     ,
     `the blue room`
+    ,
+    false
     );
 const yellowPyramid = new Item(
-    `a yellow pyramid`
+    `the yellow pyramid`
     ,
     `a yellow pyramid made of stone`
     ,
     `the yellow room`
-    );
-const redBag = new Item(
-    `a red bag`
     ,
-    `a red bag made of cloth`
+    true
+    );
+const redCloth = new Item(
+    `the red cloth`
+    ,
+    `a red cloth made of velvet`
     ,
     `the red room`
+    ,
+    false
     );
 const greenCylinder = new Item(
-    `a green cylinder`
+    `the green cylinder`
     ,
     `a green cylinder made of glass`
     ,
     `the green room`
+    ,
+    true
     );
 const blueRoom = new Loc(
-    `a blue room`
+    `the blue room`
     ,
     `a tranquil room painted blue`
     ,
-    [`a yellow room`]
+    [`the yellow room`]
     ,
     [blueBox]
     );
 const yellowRoom = new Loc(
-    'a yellow room'
+    'the yellow room'
     ,
     `a painfully bright yellow room`
     ,
-    [`a blue room`, `a red room`]
+    [`the blue room`, `the red room`]
     ,
     [yellowPyramid]
     );
 const redRoom = new Loc(
-    `a red room`
+    `the red room`
     ,
     `an uneasy room painted in red`
     ,
-    [`a yellow room`, `a green room`]
+    [`the yellow room`, `the green room`]
     ,
-    [redBag]
+    [redCloth]
     );
 const greenRoom = new Loc(
-    'a green room'
+    'the green room'
     ,
     `a room of nature, painted green`
     ,
-    [`a red room`]
+    [`the red room`]
     ,
     [greenCylinder]
     );
-// console.log(blueBox);
+console.log(blueRoom.contains(`the blue box`));
 
 const locationDict = {blueRoom, yellowRoom, redRoom, greenRoom};
+const playerInventory = [];
 
-// console.log(locationDict.yellowRoom['items within']);
+console.log(greenRoom.contains(`the blue box`));
+console.log(greenRoom.contains(`the blue box`));
+console.log(locationDict);
+console.log(locationDict.yellowRoom[`items within`]);
+console.log(blueBox);
 
 // function test(dict, value) {
 //     console.log(locationDict[dict][value]);
 // };
 // test('yellowRoom', 'items within');
+
+const roomState = {
+    'the blue room': [`the yellow room`],
+    'the yellow room': [`the red room`, `the blue room`],
+    'the red room': [`the green room`, `the yellow room`],
+    'the green room': [`the red room`]
+};
+
+let currentRoom = `the blue room`;
+console.log(roomState[currentRoom])
+/* 
+'the yellow room'
+if roomState[currentRoom].includes(target)
+*/
 
 export const domDisplay = (playerInput) => {
     /* 
@@ -155,5 +196,46 @@ export const domDisplay = (playerInput) => {
                     - What is the process of picking up an item exactly? ex: Look. Pick from a list of items. Put into players list of items... 
     */
 
-    // Your code here
-} 
+    let output;
+    let inputResponse;
+    
+    let [action, target] = parseInput(playerInput);
+    console.log(action, target);
+
+    switch (action) {
+        case `move to`:
+            break;
+        case `look at`:
+            break;
+        case `pick up`:
+            break;
+        default:
+            inputResponse = `I don't know how to ${playerInput}`;
+    };
+
+    output = inputResponse;
+
+    return output;
+};
+
+function parseInput(input) {
+    input = input.toLowerCase().replace(/\s+/g, ` `).trim();
+    const [actionA, actionB, ...target] = input.toLowerCase().split(` `);
+    return [actionA + ` ` + actionB , target.join(` `)];
+};
+console.log(parseInput('move to the red room'));
+
+// console.log(isInRoom(blueRoom, 'the blue box'))
+
+function pickUp() {
+    if ()
+    
+    /* 
+    if item ffffffffff
+    */
+};
+
+console.log(pickUp('the blue box'));
+// console.logObject.keys(locationDict.blueRoom["items within"])
+console.log(locationDict.blueRoom[`items within`][0].name);
+blueRoom[`items within`]//possible use includes instead, or look at site >>>>
