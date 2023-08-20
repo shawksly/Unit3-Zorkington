@@ -39,6 +39,10 @@ class Item {
     interact() {
         return `You have interacted with ${this.name}`;
     };
+
+    isFixed() {
+        return this.fixed === true;
+    };
 };
 
 class Loc extends Item {
@@ -54,15 +58,20 @@ class Loc extends Item {
         // return this[`items within`].name.includes(item);
 
         // Look, ma! I made the functionality of a .includes() method with a .find() method!
+        // Update: The more I've learned, the less impressive this is. lol.
         // checks if passed item variable matches an item in the object this method is called for
-        if ((this[`items within`].find(seeking => seeking.name === item) == null)) {
-            return false;
-        } else {
-            return true;
-        };
+        // if ((this[`items within`].find(seeking => seeking.name === item) == null)) {
+        //     return false;
+        // } else {
+        //     return true;
+        // };
+
+        //returns true if any objects within the array have a matching name value
+        return this[`items within`].some(seeking => seeking.name === item);
     };
 };
 
+// item ojects
 const blueBox = new Item(
     `the blue box`
     ,
@@ -99,6 +108,8 @@ const greenCylinder = new Item(
     ,
     true
     );
+
+// location objects
 const blueRoom = new Loc(
     `the blue room`
     ,
@@ -136,23 +147,22 @@ const greenRoom = new Loc(
     ,
     [greenCylinder]
     );
-console.log(blueRoom.contains(`the blue box`));
+// * testing
+// console.log(blueRoom.contains(`the blue box`));
 
+//dictionaries and inentory
 const locationDict = {blueRoom, yellowRoom, redRoom, greenRoom};
+const itemDict = {blueBox, yellowPyramid, redCloth, greenCylinder};
 const playerInventory = [];
 
 // * testing
-console.log(greenRoom.contains(`the blue box`));
-console.log(greenRoom.contains(`the blue box`));
-console.log(locationDict);
-console.log(locationDict.yellowRoom[`items within`]);
-console.log(blueBox);
+// console.log(greenRoom.contains(`the blue box`));
+// console.log(greenRoom.contains(`the blue box`));
+// console.log(locationDict);
+// console.log(locationDict.yellowRoom[`items within`]);
+// console.log(blueBox);
 
-// function test(dict, value) {
-//     console.log(locationDict[dict][value]);
-// };
-// test('yellowRoom', 'items within');
-
+// state maching
 const roomState = {
     'the blue room': [`the yellow room`],
     'the yellow room': [`the red room`, `the blue room`],
@@ -160,8 +170,18 @@ const roomState = {
     'the green room': [`the red room`]
 };
 
+// variables are global so they can be accessed by functions and functions within other functions
 let currentRoom = `the blue room`;
-console.log(roomState[currentRoom])
+
+let roomVar;
+let itemI;
+
+let room;
+let item;
+
+// * testing
+// console.log(roomState[currentRoom])
+
 /* pseudo code for state change
 'the yellow room'
 if roomState[currentRoom].includes(target)
@@ -199,79 +219,83 @@ export const domDisplay = (playerInput) => {
                     - What is the process of picking up an item exactly? ex: Look. Pick from a list of items. Put into players list of items... 
     */
 
+    //return variable
     let output;
-    let inputResponse;
-    
+
+    // parsed text variables
     let [action, target] = parseInput(playerInput);
-    console.log(action, target);
+
+    // *testing
+    // console.log(action, target);
+    
+    // stores the variable string for the current room, and it's location in the object.
+    roomVar = roomVariable(currentRoom);
+    room = locationDict[roomVar];
+
+    // stores the index string for the target item within the current room, and it's location in the object
+    itemI = itemIndex(target);
+    item = room[`items within`][itemI];
 
     switch (action) {
+        
+        // TODO move to action
         case `move to`:
             break;
+
+        // TODO look at action
         case `look at`:
             break;
-        case `pick up`:
-            inputResponse = pickUp(target);
-            break;
-        default:
-            inputResponse = `I don't know how to ${playerInput}`;
-    };
 
-    output = inputResponse;
+        // TODO pick up action
+        case `pick up`:
+
+            // if item can't be found in any location, respond accordingly.
+            if (!exists(target)) {
+                output = `You probably shouldn't touch ${target}. It might not even be an item...`;
+                break;
+
+            // if item is in location and not fixed in place
+            } else if (room.contains(target) && !item.isFixed()) {
+         
+                // change location variable within item to inventory
+                item.location = `inventory`;
+        
+                //add item to inventory
+                playerInventory.push(item);
+        
+                //remove item from room
+                room[`items within`].splice(itemI, 1);
+
+                output = `${target} has been placed in your inventory.`;
+                break;
+
+            } else {
+                output = `${target} won't budge.`;
+                break;
+            };
+
+
+        default:
+            output = `I don't know how to ${playerInput}`;
+            break;
+    };
 
     return output;
 };
 
+// parses input
 function parseInput(input) {
+    // sets input to lower case, and removes any extra spaces from between and outside the string
     input = input.toLowerCase().replace(/\s+/g, ` `).trim();
+    // splits string into array of words, stores the first two separately, and the rest in a third variable
     const [actionA, actionB, ...target] = input.toLowerCase().split(` `);
+    // returns action variables joined with a space, and the target array joined as a string
     return [actionA + ` ` + actionB , target.join(` `)];
 };
-console.log(parseInput('move to the red room'));
 
-// console.log(isInRoom(blueRoom, 'the blue box'))
+// *testing
+// console.log(parseInput('move to the red room'));
 
-function pickUp(itemName) {
-    /* Pseudo code attempt
-    if item is in current room
-    if(locationDict.currentRoom.itemName)
-        pickup item
-    else
-        log that item isn't here
-    */
-
-    // ! This is why this(below) doesn't work. currentRoom (`the blue room`) is equal to the object's name ( blueRoom {name: `the blue room`} )
-    // ! It sent me on a wild tangent to create roomVariable() and itemVariable() to generate the needed variable names
-    // if (locationDict.currentRoom[`items within`]) {
-    // };
-    
-    // if the item is in the room
-    if (locationDict[roomVariable(currentRoom)].contains(itemName)) {
-
-        // * testing
-        console.log(`inventory before`, playerInventory);
-        console.log(`room items before`, locationDict[roomVariable(currentRoom)][`items within`]);
-
-        //add item to inventory
-        playerInventory.push(locationDict[roomVariable(currentRoom)][`items within`][itemVariable(currentRoom, itemName)]);
-
-        //remove item from room
-        locationDict[roomVariable(currentRoom)][`items within`].splice(itemVariable(currentRoom, itemName), 1);
-
-        // change location variable within item
-        locationDict[roomVariable(currentRoom)][`items within`][itemVariable(currentRoom, itemName)].location = `inventory`;
-
-        // * testing
-        console.log(`inventory after`, playerInventory);
-        console.log(`room items after`, locationDict[roomVariable(currentRoom)][`items within`]);
-
-        return `${itemName} has been placed in your inventory.`;
-
-    } else {
-        return `${itemName} won't budge.`;
-    };
-
-};
 
 // returns room object variable name
 function roomVariable(roomString) {
@@ -282,32 +306,52 @@ function roomVariable(roomString) {
     return keysArray.find(key => locationDict[key].name === roomString)
 };
 
-// returns item object variable name
-function itemVariable(roomString, itemString) {
+// returns item object index given child property
+function itemIndex(itemString) {
 
-    // ! doesn't work but should
-    // uses roomVariable() and returns item index number if it has the item name in its name property
-    // return locationDict[roomVariable(roomString)][`items within`].findIndex(itemIndex => {
-    //     locationDict[roomVariable(roomString)][`items within`][itemIndex].name === itemString;
-    // });
+    // * I finally !@$#ing #@$% made it work. It's so pretty now.
+    // when it finds a string in the name property, it returns the object's index
+    return room[`items within`].findIndex(itemIndex =>  itemIndex.name === itemString);
 
-    // for loop works. when it finds a matching string it returns the index number
-    for (let itemIndex in locationDict[roomVariable(roomString)][`items within`]) {
-        if (locationDict[roomVariable(roomString)][`items within`][itemIndex].name === itemString) {
-            return itemIndex;
-        };
-    };
+    // * for loop - works, but ^ is better
+    // When it finds a matching string it returns the index number
+    // for (let itemIndex in locationDict[roomVariable(roomString)][`items within`]) {
+    //     if (locationDict[roomVariable(roomString)][`items within`][itemIndex].name === itemString) {
+    //         return itemIndex;
+    //     };
+    // };
 
 };
 
+// returns true if item name exists in any item, in any location
+function exists(itemString) {
+    // holds room variable names
+    let keysArray = Object.keys(locationDict);
+
+    // this was a nightmare.
+    // uses objust key array to look at each object, if true is recieved from function it returns
+    return keysArray.some(place => {
+        // per each object (above line), looks at each item, if true is recieved from function, it returns
+        return locationDict[place][`items within`].some(thing => {
+            
+            // * testing
+            // console.log('place:', place, 'thing:', thing, 'thing.name:', thing.name, 'itemString:', itemString, 'truth:', thing.name === itemString);
+            
+            //if the value of the items name property returns true, it returns, and the returns cascade upward
+            return thing.name === itemString
+        });
+    });
+};
+
 // * testing logs
-console.log(`pickup() test`, pickUp('the blue box'));
-console.log(`object keys test`, Object.keys(locationDict));
-console.log(`item within locations access test`, locationDict.blueRoom[`items within`][1].name);
-console.log(`roomVariable() test`, locationDict[roomVariable(currentRoom)]);
-console.log(`itemVariable() test`, itemVariable(currentRoom, 'the blue box'));
-console.log(`roomVariable() and itemVariable() test`, locationDict.blueRoom[`items within`][itemVariable(currentRoom, `the yellow pyramid`)].name);
-console.log(locationDict[roomVariable(currentRoom)].contains(`the blue box`));
+//? object keys test
+// console.log(`****object ke ys test`, Object.keys(locationDict));
+
+//? property access test/reference
+// console.log(`item within locations access test`, locationDict.blueRoom[`items within`][1].name);
+
+//? roomVariable() test
+// console.log(`****roomVariable() test`, locationDict[roomVariable(currentRoom)]);
 
 // can I put more functions as methods
 // 
