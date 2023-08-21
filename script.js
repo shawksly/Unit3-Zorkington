@@ -117,7 +117,7 @@ const blueRoom = new Loc(
     ,
     [`the yellow room`]
     ,
-    // ! testing - yellowPyramid needs to be removed
+    // ! testing - yellowPyramid for testing fixed objects before player can move rooms needs to be removed
     [blueBox, yellowPyramid]
     );
 const yellowRoom = new Loc(
@@ -147,6 +147,7 @@ const greenRoom = new Loc(
     ,
     [greenCylinder]
     );
+
 // * testing
 // console.log(blueRoom.contains(`the blue box`));
 
