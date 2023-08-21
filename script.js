@@ -18,11 +18,11 @@ export const gameDetails = {
     desc: 'Welcome to the world of Placeholder... here are some quick rules & concepts... More to come...',
     author: 'Scott Lee',
     cohort: 'PTSB-june-2023',
-    startingRoomDescription: 'What you see before you is a blue room.',
+    startingRoomDescription: 'What you see before you is the a tranquil room painted blue. Ahead of you, you can see a blue box made of paper.',
     playerCommands: [
         // replace these with your games commands as needed
         // 'inspect', 'view', 'look', 'pickup',
-        'move to', 'look at', 'pick up',
+        'move to', 'look at', 'pick up', 'put down',
     ]
     // Commands are basic things that a player can do throughout the game besides possibly moving to another room. This line will populate on the footer of your game for players to reference. 
     // This shouldn't be more than 6-8 different commands.
@@ -68,6 +68,37 @@ class Loc extends Item {
 
         //returns true if any objects within the array have a matching name value
         return this[`items within`].some(seeking => seeking.name === item);
+    };
+
+    describeItems() {
+        
+        let output = ``;
+        
+        // if array of items in room is empty
+        if (this[`items within`].length === 0) {
+
+            output = `This room appears to be empty`;
+
+        // if array of items not empty
+        } else {
+            
+            // for each item
+            this[`items within`].forEach(item => {
+                
+                // if output is empty, add beginning of sentence
+                if (!output) {
+                    output += `Ahead of you, you can see `;
+
+                // if output is not empty, put "and" before next item
+                } else {
+                    output += `, and `;
+                };
+
+                //add item description
+                output += item.description;
+            });
+        };
+        return output;
     };
 };
 
@@ -117,8 +148,7 @@ const blueRoom = new Loc(
     ,
     [`the yellow room`]
     ,
-    // ! testing - yellowPyramid for testing fixed objects before player can move rooms needs to be removed
-    [blueBox, yellowPyramid]
+    [blueBox]
     );
 const yellowRoom = new Loc(
     'the yellow room'
@@ -153,6 +183,7 @@ const greenRoom = new Loc(
 
 //dictionaries and inentory
 const locationDict = {blueRoom, yellowRoom, redRoom, greenRoom};
+// ! might not use. delete?
 const itemDict = {blueBox, yellowPyramid, redCloth, greenCylinder};
 const playerInventory = [];
 
@@ -171,7 +202,7 @@ const roomState = {
     'the green room': [`the red room`]
 };
 
-// variables are global so they can be accessed by functions and functions within other functions
+// variables are global so they can be accessed from anywhere
 let currentRoom = `the blue room`;
 
 let roomVar;
@@ -182,11 +213,6 @@ let item;
 
 // * testing
 // console.log(roomState[currentRoom])
-
-/* pseudo code for state change
-'the yellow room'
-if roomState[currentRoom].includes(target)
-*/
 
 export const domDisplay = (playerInput) => {
     /* 
@@ -229,18 +255,34 @@ export const domDisplay = (playerInput) => {
     // *testing
     // console.log(action, target);
     
-    // stores the variable string for the current room, and it's location in the object.
-    roomVar = roomVariable(currentRoom);
-    room = locationDict[roomVar];
-
-    // stores the index string for the target item within the current room, and it's location in the object
-    itemI = itemIndex(target);
-    item = room[`items within`][itemI];
+    // sets variables up to access properties
+    roomVarSetup(target);
 
     switch (action) {
         
         // TODO move to action
         case `move to`:
+
+            // if the room can't be found anywhere, respond accordingly
+            if (!Object.keys(roomState).includes(target)) {
+                output = `You sound like a crazy person! ${target} does not exist, at least not in this place.`
+
+            // if room can be accessed from this room via roomState
+            } else if (roomState[currentRoom].includes(target)) {
+
+                //change current room to target room
+                currentRoom = target;
+
+                //set property access variables to new room
+                roomVarSetup(target);
+
+                output = `What you see before you is ${room.description}. ${room.describeItems()}.`;
+                // TODO add exit text.
+
+            // if room exists but can't be accessed via roomState
+            } else {
+                output = `You can't get to ${target} from ${currentRoom}...`;
+            };
             break;
 
         // TODO look at action
@@ -253,7 +295,6 @@ export const domDisplay = (playerInput) => {
             // if item can't be found in any location, respond accordingly.
             if (!exists(target)) {
                 output = `You probably shouldn't touch ${target}. It might not even be an item...`;
-                break;
 
             // if item is in location and not fixed in place
             } else if (room.contains(target) && !item.isFixed()) {
@@ -268,13 +309,16 @@ export const domDisplay = (playerInput) => {
                 room[`items within`].splice(itemI, 1);
 
                 output = `${target} has been placed in your inventory.`;
-                break;
 
+            // if target exists and is not fixed in place
             } else {
                 output = `${target} won't budge.`;
-                break;
             };
+            break;
 
+        // TODO put down action
+        case `put down`:
+            break;
 
         default:
             output = `I don't know how to ${playerInput}`;
@@ -286,6 +330,7 @@ export const domDisplay = (playerInput) => {
 
 // parses input
 function parseInput(input) {
+    // TODO accept 'the' 'a' or ''. 
     // sets input to lower case, and removes any extra spaces from between and outside the string
     input = input.toLowerCase().replace(/\s+/g, ` `).trim();
     // splits string into array of words, stores the first two separately, and the rest in a third variable
@@ -294,9 +339,25 @@ function parseInput(input) {
     return [actionA + ` ` + actionB , target.join(` `)];
 };
 
+// TODO capitalize and stuff
+function parseOutput(string) {
+
+};
+
 // *testing
 // console.log(parseInput('move to the red room'));
 
+function roomVarSetup(target) {
+
+    // stores the variable string for the current room, and it's location in the object.
+    roomVar = roomVariable(currentRoom);
+    room = locationDict[roomVar];
+
+    // stores the index string for the target item within the current room, and it's location in the object
+    itemI = itemIndex(target);
+    item = room[`items within`][itemI];
+
+};
 
 // returns room object variable name
 function roomVariable(roomString) {
