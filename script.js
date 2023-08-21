@@ -260,7 +260,9 @@ export const domDisplay = (playerInput) => {
 
     switch (action) {
         
-        // TODO move to action
+        // *****************
+        // * Move to action
+
         case `move to`:
 
             // if the room can't be found anywhere, respond accordingly
@@ -285,21 +287,26 @@ export const domDisplay = (playerInput) => {
             };
             break;
 
-        // TODO look at action
+        // *****************
+        // * Look at action
+
+        // TODO needs to respond to item or room
         case `look at`:
             break;
 
-        // TODO pick up action
+        // *****************
+        // * Pick up action
+
         case `pick up`:
 
             // if item can't be found in any location, respond accordingly.
-            if (!exists(target)) {
+            if (!itemIsInRoom(target)) {
                 output = `You probably shouldn't touch ${target}. It might not even be an item...`;
 
             // if item is in location and not fixed in place
             } else if (room.contains(target) && !item.isFixed()) {
          
-                // change location variable within item to inventory
+                // change location property within item to inventory
                 item.location = `inventory`;
         
                 //add item to inventory
@@ -316,9 +323,37 @@ export const domDisplay = (playerInput) => {
             };
             break;
 
-        // TODO put down action
+        // *****************
+        // * Put down action
+
         case `put down`:
+
+            // if item can't be found in any location, respond accordingly
+            if (!itemIsInRoom(target) && !itemIsInInventory(target)) {
+                output = `How are you supposed to put down ${target} if it doesn't even exist?`
+            
+            // if item is in the inventory
+            } else if (playerInventory.includes(item)) {
+
+                //change item's location property to the current room
+                item.location = currentRoom;
+
+                // add item to current room
+                room[`items within`].push(item);
+
+                // remove item from inventory
+                playerInventory.splice(playerInventory.indexOf(`target`), 1);
+
+                output = `You put down ${target} in ${currentRoom}`;
+            
+            // if the item exists and is not in the inventory
+            } else {
+                output = `You've got to pick up ${target} to be able to put it back down...`
+            };
             break;
+
+        // *****************
+        // * Default action
 
         default:
             output = `I don't know how to ${playerInput}`;
@@ -339,59 +374,63 @@ function parseInput(input) {
     return [actionA + ` ` + actionB , target.join(` `)];
 };
 
+// *testing
+// console.log(parseInput('move to the red room'));
+
 // TODO capitalize and stuff
 function parseOutput(string) {
 
 };
 
-// *testing
-// console.log(parseInput('move to the red room'));
+function roomVarSetup(itemString) {
 
-function roomVarSetup(target) {
+    // *****************
+    // * Room setup
 
-    // stores the variable string for the current room, and it's location in the object.
-    roomVar = roomVariable(currentRoom);
-    room = locationDict[roomVar];
-
-    // stores the index string for the target item within the current room, and it's location in the object
-    itemI = itemIndex(target);
-    item = room[`items within`][itemI];
-
-};
-
-// returns room object variable name
-function roomVariable(roomString) {
     // keysArray holds room object variable names
     let keysArray = Object.keys(locationDict);
 
-    //returns object variable name if it has the room name in its name property
-    return keysArray.find(key => locationDict[key].name === roomString)
-};
+    //stores object variable name for current room if it has the room name in its name property
+    roomVar = keysArray.find(key => locationDict[key].name === currentRoom);
 
-// returns item object index given child property
-function itemIndex(itemString) {
+    // stores room object's location in the location object.
+    room = locationDict[roomVar];
 
-    // * I finally !@$#ing #@$% made it work. It's so pretty now.
-    // when it finds a string in the name property, it returns the object's index
-    return room[`items within`].findIndex(itemIndex =>  itemIndex.name === itemString);
+    // *****************
+    // * Item setup
 
-    // * for loop - works, but ^ is better
-    // When it finds a matching string it returns the index number
-    // for (let itemIndex in locationDict[roomVariable(roomString)][`items within`]) {
-    //     if (locationDict[roomVariable(roomString)][`items within`][itemIndex].name === itemString) {
-    //         return itemIndex;
-    //     };
-    // };
+    // if item is in room
+    if (itemIsInRoom(itemString)) {
+
+        // * I finally !@$#ing #@$% made it work. It's so pretty now.
+        // when it finds a string in the name property, it stores the object's index
+        itemI = room[`items within`].findIndex(itemIndex =>  itemIndex.name === itemString);
+
+        //stores the location of the item within the location
+        item = room[`items within`][itemI];
+    };
+    
+    // if item is in inventory
+    if (itemIsInInventory(itemString)) {
+
+        // when it finds a string in the name property, it stores an index
+        itemI = playerInventory.findIndex(itemIndex => itemIndex.name === itemString);
+
+        //stores the location of the item within the inventory
+        item = playerInventory[itemI];
+    };
+
+    // no else because switch statement in main code will tell user if item doesn't exist.
 
 };
 
 // returns true if item name exists in any item, in any location
-function exists(itemString) {
+function itemIsInRoom(itemString) {
     // holds room variable names
     let keysArray = Object.keys(locationDict);
 
     // this was a nightmare.
-    // uses objust key array to look at each object, if true is recieved from function it returns
+    // uses object.key array to look at each object, if true is recieved from function it returns
     return keysArray.some(place => {
         // per each object (above line), looks at each item, if true is recieved from function, it returns
         return locationDict[place][`items within`].some(thing => {
@@ -399,10 +438,20 @@ function exists(itemString) {
             // * testing
             // console.log('place:', place, 'thing:', thing, 'thing.name:', thing.name, 'itemString:', itemString, 'truth:', thing.name === itemString);
             
-            //if the value of the items name property returns true, it returns, and the returns cascade upward
-            return thing.name === itemString
+            //if the value of the item's name property matches the item name, OR the item is in the inventory, it returns, and the returns cascade upward
+            console.log('item in room', thing.name === itemString)
+            return thing.name === itemString;
         });
     });
+};
+
+// returns true if the item can be found in the inventory
+function itemIsInInventory(itemString) {
+
+    // console.log(playerInventory[0].name, itemString);
+    console.log('item in inventory',playerInventory.some(item => item.name === itemString));
+    // checks every item in inventory to see if the item's name value matches the string
+    return playerInventory.some(item => item.name === itemString);
 };
 
 // * testing logs
