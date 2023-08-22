@@ -22,7 +22,7 @@ export const gameDetails = {
     playerCommands: [
         // replace these with your games commands as needed
         // 'inspect', 'view', 'look', 'pickup',
-        'move to', 'look at', 'pick up', 'put down',
+        'move to', 'look at', 'pick up', 'put down', 'check inventory',
     ]
     // Commands are basic things that a player can do throughout the game besides possibly moving to another room. This line will populate on the footer of your game for players to reference. 
     // This shouldn't be more than 6-8 different commands.
@@ -103,86 +103,71 @@ class Loc extends Item {
 };
 
 // item ojects
+//   name
+//   description
+//   location
+//   fixed in place boolean
 const blueBox = new Item(
-    `the blue box`
-    ,
-    `a blue box made of paper`
-    ,
-    `the blue room`
-    ,
+    `the blue box`,
+    `a blue box made of paper`,
+    `the blue room`,
     false
-    );
+);
 const yellowPyramid = new Item(
-    `the yellow pyramid`
-    ,
-    `a yellow pyramid made of stone`
-    ,
-    `the yellow room`
-    ,
+    `the yellow pyramid`,
+    `a yellow pyramid made of stone`,
+    `the yellow room`,
     true
-    );
+);
 const redCloth = new Item(
-    `the red cloth`
-    ,
-    `a red cloth made of velvet`
-    ,
-    `the red room`
-    ,
+    `the red cloth`,
+    `a red cloth made of velvet`,
+    `the red room`,
     false
-    );
+);
 const greenCylinder = new Item(
-    `the green cylinder`
-    ,
-    `a green cylinder made of glass`
-    ,
-    `the green room`
-    ,
+    `the green cylinder`,
+    `a green cylinder made of glass`,
+    `the green room`,
     true
-    );
+);
 
 // location objects
+//   name
+//   description
+//   array of exits
+//   item objects in the room
 const blueRoom = new Loc(
-    `the blue room`
-    ,
-    `a tranquil room painted blue`
-    ,
-    [`the yellow room`]
-    ,
+    `the blue room`,
+    `a tranquil room painted blue`,
+    [`the yellow room`],
     [blueBox]
-    );
+);
 const yellowRoom = new Loc(
-    'the yellow room'
-    ,
-    `a painfully bright yellow room`
-    ,
-    [`the blue room`, `the red room`]
-    ,
+    'the yellow room',
+    `a painfully bright yellow room`,
+    [`the blue room`, `the red room`],
     [yellowPyramid]
-    );
+);
 const redRoom = new Loc(
-    `the red room`
-    ,
-    `an uneasy room painted in red`
-    ,
-    [`the yellow room`, `the green room`]
-    ,
+    `the red room`,
+    `an uneasy room painted in red`,
+    [`the yellow room`, `the green room`],
     [redCloth]
-    );
+);
 const greenRoom = new Loc(
-    'the green room'
-    ,
-    `a room of nature, painted green`
-    ,
-    [`the red room`]
-    ,
+    'the green room',
+    `a room of nature, painted green`,
+    [`the red room`],
     [greenCylinder]
-    );
+);
 
 // * testing
 // console.log(blueRoom.contains(`the blue box`));
 
 //dictionaries and inentory
 const locationDict = {blueRoom, yellowRoom, redRoom, greenRoom};
+
 // ! might not use. delete?
 const itemDict = {blueBox, yellowPyramid, redCloth, greenCylinder};
 const playerInventory = [];
@@ -258,16 +243,19 @@ export const domDisplay = (playerInput) => {
     // sets variables up to access properties
     roomVarSetup(target);
 
+    console.log('test', blueRoom.constructor.name);
+    console.log('test', blueBox.constructor.name);
+
     switch (action) {
         
-        // *****************
-        // * Move to action
+        // -----------------
+        // - Move to action
 
         case `move to`:
 
             // if the room can't be found anywhere, respond accordingly
             if (!Object.keys(roomState).includes(target)) {
-                output = `You sound like a crazy person! ${target} does not exist, at least not in this place.`
+                output = `You sound like a crazy person! ${target} does not exist as a location, at least not in this place.`
 
             // if room can be accessed from this room via roomState
             } else if (roomState[currentRoom].includes(target)) {
@@ -287,15 +275,44 @@ export const domDisplay = (playerInput) => {
             };
             break;
 
-        // *****************
-        // * Look at action
+        // -----------------
+        // - Look at action
 
         // TODO needs to respond to item or room
         case `look at`:
+
+            // if target is not a room, an item in a room, or an item in the inventory
+            if (!Object.keys(roomState).includes(target) && !itemIsInRoom(target) && !itemIsInInventory(target)) {
+                output = `${target}, huh? You can't look at something that isn't there...`;
+
+            // if the target is a room
+            } else if (Object.keys(roomState).includes(target)) {
+
+                //if the target is the current room
+                if (target === currentRoom) {
+                    output = `What you see before you is ${room.description}. ${room.describeItems()}.`;
+                
+                //if the target is another room
+                } else {
+                    output = `You can't see ${target} from ${currentRoom}...`
+                };
+                
+            // if the target is an item in the inventory
+            } else if (itemIsInInventory(target)) {
+                output = `You open your bag, look at ${target}, and see ${item.description}`;
+
+            // if the target is an item in a room
+            } else if (itemIsInRoom(target)) {
+                output = `You see ${item.description}.`;
+
+            // if the target is in another room
+            } else {
+                output = `You can't see ${target} from ${currentRoom}`;
+            };
             break;
 
-        // *****************
-        // * Pick up action
+        // -----------------
+        // - Pick up action
 
         case `pick up`:
 
@@ -323,8 +340,8 @@ export const domDisplay = (playerInput) => {
             };
             break;
 
-        // *****************
-        // * Put down action
+        // -----------------
+        // - Put down action
 
         case `put down`:
 
@@ -351,12 +368,20 @@ export const domDisplay = (playerInput) => {
                 output = `You've got to pick up ${target} to be able to put it back down...`
             };
             break;
+            
+        // -----------------
+        // - Check inventory action
+        
+        // TODO inventory action
 
-        // *****************
-        // * Default action
+        case `check inventory`:
+            break;
+
+        // -----------------
+        // - Default action
 
         default:
-            output = `I don't know how to ${playerInput}`;
+            output = `I don't know how to ${playerInput}.`;
             break;
     };
 
@@ -384,39 +409,49 @@ function parseOutput(string) {
 
 function roomVarSetup(itemString) {
 
-    // *****************
-    // * Room setup
+    // -----------------
+    // - Room setup
 
     // keysArray holds room object variable names
     let keysArray = Object.keys(locationDict);
 
-    //stores object variable name for current room if it has the room name in its name property
+    //GLOBAL: stores object variable name for current room if it has the room name in its name property
     roomVar = keysArray.find(key => locationDict[key].name === currentRoom);
 
-    // stores room object's location in the location object.
+    // GLOBAL: stores room object's location in the location object.
     room = locationDict[roomVar];
 
-    // *****************
-    // * Item setup
+    // -----------------
+    // - Item setup
 
     // if item is in room
     if (itemIsInRoom(itemString)) {
 
-        // * I finally !@$#ing #@$% made it work. It's so pretty now.
-        // when it finds a string in the name property, it stores the object's index
-        itemI = room[`items within`].findIndex(itemIndex =>  itemIndex.name === itemString);
-
-        //stores the location of the item within the location
-        item = room[`items within`][itemI];
+        // TODO else doesnt work because room.name will always equal currentRoom
+        if (room.name === currentRoom) {
+            // * I finally !@$#ing #@$% made it work. It's so pretty now.
+            // GLOBAL: when it finds a string in the name property, it stores the object's index
+            itemI = room[`items within`].findIndex(itemIndex =>  itemIndex.name === itemString);
+    
+            // GLOBAL: stores the location of the item within the location
+            item = room[`items within`][itemI];
+        } else {
+            let otherRoomVar = keysArray.find(loc => {
+                return locationDict[loc][`items within`].find(itm => {
+                    return itm.name === itemString;
+                });
+            });
+            console.log(otherRoomVar);
+        };
     };
     
     // if item is in inventory
     if (itemIsInInventory(itemString)) {
 
-        // when it finds a string in the name property, it stores an index
+        // GLOBAL: when it finds a string in the name property, it stores an index
         itemI = playerInventory.findIndex(itemIndex => itemIndex.name === itemString);
 
-        //stores the location of the item within the inventory
+        // GLOBAL: stores the location of the item within the inventory
         item = playerInventory[itemI];
     };
 
@@ -432,6 +467,7 @@ function itemIsInRoom(itemString) {
     // this was a nightmare.
     // uses object.key array to look at each object, if true is recieved from function it returns
     return keysArray.some(place => {
+
         // per each object (above line), looks at each item, if true is recieved from function, it returns
         return locationDict[place][`items within`].some(thing => {
             
@@ -439,7 +475,6 @@ function itemIsInRoom(itemString) {
             // console.log('place:', place, 'thing:', thing, 'thing.name:', thing.name, 'itemString:', itemString, 'truth:', thing.name === itemString);
             
             //if the value of the item's name property matches the item name, OR the item is in the inventory, it returns, and the returns cascade upward
-            console.log('item in room', thing.name === itemString)
             return thing.name === itemString;
         });
     });
@@ -448,15 +483,13 @@ function itemIsInRoom(itemString) {
 // returns true if the item can be found in the inventory
 function itemIsInInventory(itemString) {
 
-    // console.log(playerInventory[0].name, itemString);
-    console.log('item in inventory',playerInventory.some(item => item.name === itemString));
     // checks every item in inventory to see if the item's name value matches the string
     return playerInventory.some(item => item.name === itemString);
 };
 
 // * testing logs
 //? object keys test
-// console.log(`****object ke ys test`, Object.keys(locationDict));
+// console.log(`****object keys test`, Object.keys(locationDict));
 
 //? property access test/reference
 // console.log(`item within locations access test`, locationDict.blueRoom[`items within`][1].name);
