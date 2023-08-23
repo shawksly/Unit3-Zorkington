@@ -15,7 +15,7 @@
 
 export const gameDetails = {   
     title: 'The World of Placeholder',
-    desc: 'Welcome to the world of Placeholder... here are some quick rules & concepts... More to come...',
+    desc: 'Welcome to the world of Placeholder... here are some quick rules & concepts... Use the two word commands. When you interact with rooms and items, you can type "the [item]," "a [item]," or just "[item]. Good luck!',
     author: 'Scott Lee',
     cohort: 'PTSB-june-2023',
     startingRoomDescription: 'What you see before you is the a tranquil room painted blue. Ahead of you, you can see a blue box made of paper. You can exit this room to the yellow room.',
@@ -252,8 +252,11 @@ export const domDisplay = (playerInput) => {
                     - What is the process of picking up an item exactly? ex: Look. Pick from a list of items. Put into players list of items... 
     */
 
-    //return variable
+    // return variable
     let output;
+
+    // tracks whether the room needs to be described again
+    let justDescribedRoom = false;
 
     // parsed text variables
     let [action, target] = parseInput(playerInput);
@@ -282,6 +285,8 @@ export const domDisplay = (playerInput) => {
                 roomVarSetup(target);
 
                 output = `What you see before you is ${room.description}. ${room.describeItems()}. ${room.describeExits()}.`;
+                // indicates no need to add description to output
+                justDescribedRoom = true;
 
             // if room exists but can't be accessed via roomState
             } else {
@@ -304,6 +309,8 @@ export const domDisplay = (playerInput) => {
                 //if the target IS the current room
                 if (target === currentRoom) {
                     output = `What you see before you is ${room.description}. ${room.describeItems()}. ${room.describeExits()}.`;
+                    // indicates no need to add description to output
+                    justDescribedRoom = true;
                 
                 //if the target IS another room
                 } else {
@@ -319,7 +326,12 @@ export const domDisplay = (playerInput) => {
 
                 // if the target is in current room
                 if (room.contains(target)) {
-                    output = `You see ${item.description}.`;
+                    output = `You see ${item.description}`;
+                    // if the item is fixed
+                    if(item.fixed = true) {
+                        output += `, fixed in place`;
+                    };
+                    output += `.`;
 
                 // if the target is in another room
                 } else {
@@ -438,7 +450,11 @@ export const domDisplay = (playerInput) => {
             break;
     };
 
-    return output;
+    //if the room hasn't been described in this output, add the description
+    if (!justDescribedRoom) {
+        output += `${' ...'.repeat(10)} You look back up and see ${room.description}. ${room.describeItems()}. ${room.describeExits()}.`
+    }
+    return parseOutput(output);
 };
 
 // parses input
@@ -468,9 +484,52 @@ function parseInput(input) {
     return [actionA + ` ` + actionB, targetString];
 };
 
-// TODO capitalize and stuff
-function parseOutput(string) {
+// capitalizes beginning of sentences for output
+function parseOutput(output) {
 
+    //variables for for loop
+    let prevChar;
+    let currentWord = ``;
+    let currentSentence = ``;
+
+    // array of output sentences
+    const sentences = [];
+
+    // iterating on input string
+    for (let char of output) {
+    
+        // if current character in not a space, add the character to the current word
+        if (char !== ` `) {
+            currentWord += char;
+
+        // if current character is a space
+        } else {
+
+            //if current sentence is empty, add current word to current sentence without a space, otherwise with a space and set the word back to empty
+            currentSentence.length > 0 ? currentSentence += ` ` + currentWord : currentSentence += currentWord;
+            currentWord = ``;
+
+            // if current char is space (above) && prev char is sentence-ending punctuation, add current sentence to array and set to empty
+            if(prevChar === `.` || prevChar === `!` || prevChar === `?` || prevChar === `"`) {
+                sentences.push(currentSentence);
+                currentSentence = ``;
+                
+            }
+        };
+        // set prev char to char for next loop
+        prevChar = char;
+    };
+    // add current word to last sentence
+    currentSentence += ` ${currentWord}`;
+    // add sentence to last word
+    sentences.push(currentSentence);
+
+    // capitalize the first letter of each sentence and add it to lower case of the rest and store it in words array.
+    const words = sentences.map(sentence => {
+        return sentence[0].toUpperCase() + sentence.slice(1).toLowerCase();
+    });
+    //return sentences joined with spaces
+    return words.join(` `);
 };
 
 function roomVarSetup(itemString) {
