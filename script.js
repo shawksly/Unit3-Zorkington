@@ -14,11 +14,11 @@
 */
 
 export const gameDetails = {   
-    title: 'The World of Placeholder',
-    desc: 'Welcome to the world of Placeholder... here are some quick rules & concepts... Use the two word commands. When you interact with rooms and items, you can type "the [item]," "a [item]," or just "[item]. Good luck!',
+    title: 'The World of Colors',
+    desc: 'Welcome to the world of colors... here are some quick rules & concepts... Use the two word commands. When you interact with rooms and items, you can type "the [item]," "a [item]," or just "[item]. Good luck!',
     author: 'Scott Lee',
     cohort: 'PTSB-june-2023',
-    startingRoomDescription: 'What you see before you is the a tranquil room painted blue. Ahead of you, you can see a blue box made of paper. You can exit this room to the yellow room.',
+    startingRoomDescription: 'You are trapped in a maze of rooms. Can you escape? You wake up, and what you see before you is a tranquil room painted blue. Ahead of you, you can see a paper box, empty and blue in color, and a silver sword that looks newly smithed, and a shiny shell glinting in the light, cemented to the ground. You can exit this room to the yellow room.',
     playerCommands: [
         // replace these with your games commands as needed
         // 'inspect', 'view', 'look', 'pickup',
@@ -46,10 +46,13 @@ class Item {
 };
 
 class Loc extends Item {
-    constructor(name, description, exits, itemsWithin) {
+    constructor(name, description, exits, itemsWithin, isLocked, lockedDescription, itemsForEntrance) {
         super(name, description);
         this.exits = exits;
         this[`items within`] = itemsWithin;
+        this.isLocked = isLocked;
+        this[`locked description`] = lockedDescription;
+        this[`items for entrance`] = itemsForEntrance;
     };
 
     contains(item) {
@@ -131,29 +134,77 @@ class Loc extends Item {
 //   description
 //   location
 //   fixed in place boolean
-const blueBox = new Item(
-    `the blue box`,
-    `a blue box made of paper`,
+const paperBox = new Item(
+    `the paper box`,
+    `a paper box, empty and blue in color`,
     `the blue room`,
     false
 );
-const yellowPyramid = new Item(
-    `the yellow pyramid`,
-    `a yellow pyramid made of stone`,
+const silverSword = new Item(
+    `the silver sword`,
+    `a silver sword that looks newly smithed`,
+    `the blue room`,
+    false
+);
+const shinyShell = new Item(
+    `the shiny shell`,
+    `a shiny shell glinting in the light, cemented to the ground`,
+    `the shiny shell`,
+    true
+);
+const smallPyramid = new Item(
+    `the small pyramid`,
+    `a small pyramid made of sand and stone`,
     `the yellow room`,
     true
 );
-const redCloth = new Item(
-    `the red cloth`,
-    `a red cloth made of velvet`,
+const goldenScarab = new Item(
+    `the golden scarab`,
+    `a golden scarab, frozen in time`,
+    `the yellow room`,
+    false
+);
+const brittleSpear = new Item(
+    `the brittle spear`,
+    `a brittle spear, fragile and ancient`,
+    `the yellow room`,
+    false
+);
+const velvetCloth = new Item(
+    `the velvet cloth`,
+    `a velvet cloth, a dark red in hue`,
     `the red room`,
     false
 );
-const greenCylinder = new Item(
-    `the green cylinder`,
-    `a green cylinder made of glass`,
+const obsidianRock = new Item(
+    `the obsidian rock`,
+    `a heavy obsidian rock, too large to lift`,
+    `the red room`,
+    true
+);
+const wovenCloak = new Item(
+    `the woven cloak`,
+    `a woven cloak, perfect for travel`,
+    `the red room`,
+    false
+);
+const stoneCylinder = new Item(
+    `the stone cylinder`,
+    `a stone cylinder, painted green and oddly smooth`,
     `the green room`,
     true
+);
+const grayPebble = new Item(
+    `the gray pebble`,
+    `a smooth gray pebble, made for skipping`,
+    `the green room`,
+    false
+);
+const glassCup = new Item(
+    `the glass cup`,
+    `a glass cup, blown in a furnace`,
+    `the green room`,
+    false 
 );
 
 // location objects
@@ -165,49 +216,85 @@ const blueRoom = new Loc(
     `the blue room`,
     `a tranquil room painted blue`,
     [`the yellow room`],
-    [blueBox]
+    [paperBox, silverSword, shinyShell],
+    false,
+    undefined,
+    []
 );
 const yellowRoom = new Loc(
     'the yellow room',
     `a painfully bright yellow room`,
-    [`the blue room`, `the red room`],
-    [yellowPyramid]
+    [`the red room`, `the green room`, `the blue room`],
+    [smallPyramid, goldenScarab, brittleSpear],
+    false,
+    undefined,
+    []
 );
 const redRoom = new Loc(
     `the red room`,
     `an uneasy room painted in red`,
-    [`the yellow room`, `the green room`],
-    [redCloth]
+    [`the yellow room`],
+    [velvetCloth, obsidianRock, wovenCloak],
+    false,
+    undefined,
+    []
 );
 const greenRoom = new Loc(
     'the green room',
     `a room of nature, painted green`,
-    [`the red room`],
-    [greenCylinder]
+    [`the yellow room`, `the purple room`],
+    [stoneCylinder, grayPebble, glassCup],
+    false,
+    undefined,
+    []
+);
+const purpleRoom = new Loc(
+    'the purple room',
+    `a small room with a slight purple hue, and a clear and open exit`,
+    [`the green room`],
+    [],
+    true,
+    [`a magical lock, for your own safety`, `an adventurer's garb and gear`],
+    [`the silver sword`, `the woven cloak`]
 );
 
 //dictionaries and inventory
-const locationDict = {blueRoom, yellowRoom, redRoom, greenRoom};
+const locationDict = {blueRoom, yellowRoom, redRoom, greenRoom, purpleRoom};
 const playerInventory = [];
 
-// dictionary for spelling definitions
+// dictionary for spelling variations
 const spellingDict = {
-    'the blue room': [`the blue room`, `a blue room`, `blue room`],
-    'the yellow room': [`the yellow room`, `a yellow room`, `yellow room`],
-    'the red room': [`the red room`, `a red room`, `red room`],
-    'the green room': [`the green room`, `a green room`, `green room`],
-    'the blue box': [`the blue box`, `a blue box`, `blue box`],
-    'the yellow pyramid': [`the yellow pyramid`, `a yellow pyramid`, `yellow pyramid`],
-    'the red cloth': [`the red cloth`, `a red cloth`, `red cloth`],
-    'the green cylinder': [`the green cylinder`, `a green cylinder`, `green cylinder`]
+    // rooms
+    'the blue room': [`the blue room`, `a blue room`, `blue room`, `the tranquil room`, `a tranquil room`, `tranquil room`, `the tranquil blue room`, `a tranquil blue room`, `tranquil blue room`, `blue`],
+    'the yellow room': [`the yellow room`, `a yellow room`, `yellow room`, `the painfully bright yellow room`, `a painfully bright yellow room`, `painfully bright yellow room`,  `the painfully bright room`, `a painfully bright room`, `painfully bright room`, `the painful yellow room`, `a painful yellow room`, `painful yellow room`, `the bright yellow room`, `a bright yellow room`, `bright yellow room`, `the bright room`, `a bright room`, `bright room`, `yellow`],
+    'the red room': [`the red room`, `a red room`, `red room`, `the uneasy room`, `an uneasy room`, `a uneasy room`, `uneasy room`, `red`],
+    'the green room': [`the green room`, `a green room`, `green room`, `the nature room`, `a nature room`, `nature room`, `green`],
+    'the purple room': [`the purple room`, `a purple room`, `purple room`, `the small room`, `a small room`, `small room`, `the exit room`, `an exit room`, `a exit room`, `exit room`, `the clear room`, `a clear room`, `clear room`, `the open room`, `a open room`, `open room`, `purple`],
+    // blue room items
+    'the paper box': [`the paper box`, `a paper box`, `paper box`, `the empty box`, `a empty box`, `empty box`, `the blue box`, `a blue box`, `blue box`, `the box`, `a box`, `box`],
+    'the silver sword': [`the silver sword`, `a silver sword`, `silver sword`, `the smithed sword`, `a smithed sword`, `smithed sword`, `the sword`, `a sword`, `sword`],
+    'the shiny shell': [`the shiny shell`, `a shiny shell`, `shiny shell`, `the glinting shell`, `a glinting shell`, `glinting shell`, `the cemented shell`, `a cemented shell`, `cemented shell`, `the shell`, `a shell`, `shell`],
+    // yellow room items
+    'the small pyramid': [`the small pyramid`, `a small pyramid`, `small pyramid`, `the sand pyramid`, `a sand pyramid`, `sand pyramid`, `the stone pyramid`, `a stone pyramid`, `stone pyramid`, `the pyramid`, `a pyramid`, `pyramid`],
+    'the golden scarab': [`the golden scarab`, `a golden scarab`, `golden scarab`, `the frozen scarab`, `a frozen scarab`, `frozen scarab`, `the scarab`, `a scarab`, `scarab`],
+    'the brittle spear': [`the brittle spear`, `a brittle spear`, `brittle spear`, `the fragile spear`, `a fragile spear`, `fragile spear`, `the ancient spear`, `an ancient spear`, `a ancient spear`, `ancient spear`, `the spear`, `a spear`, `spear`],
+    // red room items
+    'the velvet cloth': [`the velvet cloth`, `a velvet cloth`, `velvet cloth`, `the dark red cloth`, `a dark red cloth`, `dark red cloth`, `the red cloth`, `a red cloth`, `red cloth`, `the cloth`, `a cloth`, `cloth`],
+    'the obsidian rock': [`the obsidian rock`, `an obsidian rock`, `a obsidian rock`, `obsidian rock`, `the heavy obsidian rock`, `a heavy obsidian rock`, `heavy obsidian rock`, `the heavy rock`, `a heavy rock`, `heavy rock`, `the large rock`, `a large rock`, `large rock`, `the rock`, `a rock`, `rock`],
+    'the woven cloak': [`the woven cloak`, `a woven cloak`, `woven cloak`, `the travel cloak`, `a travel cloak`, `travel cloak`, `the cloak`, `a cloak`, `cloak`],
+    // green room items
+    'the stone cylinder': [`the stone cylinder`, `a stone cylinder`, `stone cylinder`, `the green cylinder`, `a green cylinder`, `green cylinder`, `the smooth cylinder`, `a smooth cylinder`, `smooth cylinder`, `the oddly smooth cylinder`, `an oddly smooth cylinder`, `a oddly smooth cylinder`, `oddly smooth cylinder`, `the cylinder`, `a cylinder`, `cylinder`],
+    'the gray pebble': [`the gray pebble`, `a gray pebble`, `gray pebble`, `the smooth gray pebble`, `a smooth gray pebble`, `smooth gray pebble`, `the smooth pebble`, `a smooth pebble`, `smooth pebble`, `the skipping pebble`, `a skipping pebble`, `skipping pebble`, `the grey pebble`, `a grey pebble`, `grey pebble`, `the smooth grey pebble`, `a smooth grey pebble`, `smooth grey pebble`, `the pebble`, `a pebble`, `pebble`],
+    'the glass cup': [`the glass cup`, `a glass cup`, `glass cup`, `the blown cup`, `a blown cup`, `blown cup`, `the cup`, `a cup`, `cup`,]
 };
 
 // state maching
 const roomState = {
     'the blue room': [`the yellow room`],
-    'the yellow room': [`the red room`, `the blue room`],
-    'the red room': [`the green room`, `the yellow room`],
-    'the green room': [`the red room`]
+    'the yellow room': [`the red room`, `the green room`, `the blue room`],
+    'the red room': [`the yellow room`],
+    'the green room': [`the yellow room`, `the purple room`],
+    'the purple room': [`the green room`]
 };
 
 // variables are global so they can be accessed from anywhere
@@ -394,7 +481,7 @@ export const domDisplay = (playerInput) => {
                 // remove item from inventory
                 playerInventory.splice(playerInventory.indexOf(`target`), 1);
 
-                output = `You put down ${target} in ${currentRoom}`;
+                output = `You put down ${target} in ${currentRoom}.`;
             
             // if the item exists and is not in the inventory
             } else {
@@ -452,7 +539,7 @@ export const domDisplay = (playerInput) => {
 
     //if the room hasn't been described in this output, add the description
     if (!justDescribedRoom) {
-        output += `${' ...'.repeat(10)} You look back up and see ${room.description}. ${room.describeItems()}. ${room.describeExits()}.`
+        output += `${' ...'.repeat(20)} You look back up and see ${room.description}. ${room.describeItems()}. ${room.describeExits()}.`
     }
     return parseOutput(output);
 };
