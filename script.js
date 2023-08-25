@@ -1,33 +1,20 @@
-/* 
-    TODO for students
-        General Setup:
-            - This object is framed for you to fill out the values to help customize your game.
-            - This will alter the browser to display your game title. The "Quick Notes" modal will also detail your information along with the description (desc) of what your game is about. It is important to highlight key commands that you want the player to use.
-            - The startingRoomDescription will display what the player sees upon coming to your project.
-
-        Do NOT alter the name of this object.
-
-        Both exports are required in order for this project to run.
-
-        - index.html should be running in your browser through the build process.
-            - use your browsers console throughout testing.
-*/
-
 export const gameDetails = {   
     title: 'The World of Colors',
     desc: 'Welcome to the world of colors... here are some quick rules & concepts... Use the two word commands. When you interact with rooms and items, you can type "the [item]," "a [item]," or just "[item]. Good luck!',
     author: 'Scott Lee',
     cohort: 'PTSB-june-2023',
-    startingRoomDescription: 'You are trapped in a maze of rooms. Can you escape? You wake up, and what you see before you is a tranquil room painted blue. Ahead of you, you can see a paper box, empty and blue in color, and a silver sword that looks newly smithed, and a shiny shell glinting in the light, cemented to the ground. You can exit this room to the yellow room.',
+    startingRoomDescription: 'You are trapped in a maze of rooms. Can you escape? You wake up, and what you see before you is a tranquil room painted blue. ... ... ... ... ... Ahead of you, you can see a paper box, empty and blue in color, and a silver sword that looks newly smithed, and a shiny shell glinting in the light, cemented to the ground. ... ... ... ... ... You can exit this room to the yellow room.',
     playerCommands: [
-        // replace these with your games commands as needed
-        // 'inspect', 'view', 'look', 'pickup',
         'move to', 'look at', 'pick up', 'put down', 'check inventory',
     ]
-    // Commands are basic things that a player can do throughout the game besides possibly moving to another room. This line will populate on the footer of your game for players to reference. 
-    // This shouldn't be more than 6-8 different commands.
-}
+};
 
+// ************************
+// * classes
+// ************************
+
+// -----------------
+// - Item class
 class Item {
     constructor(name, description, location, fixed) {
         this.name = name;
@@ -36,25 +23,30 @@ class Item {
         this.fixed = fixed;
     };
 
+    // -----------------
+    // - Item methods
     interact() {
         return `You have interacted with ${this.name}`;
     };
-
-    isFixed() {
-        return this.fixed === true;
-    };
 };
 
+// -----------------
+// - Loc class
 class Loc extends Item {
-    constructor(name, description, exits, itemsWithin, isLocked, lockedDescription, itemsForEntrance) {
+    constructor(name, description, exits, itemsWithin, isLocked, lockType, clue, itemsForEntrance, backgroundColor, titleColor) {
         super(name, description);
         this.exits = exits;
         this[`items within`] = itemsWithin;
         this.isLocked = isLocked;
-        this[`locked description`] = lockedDescription;
+        this[`lock type`] = lockType;
+        this.clue = clue;
         this[`items for entrance`] = itemsForEntrance;
+        this[`background color`] = backgroundColor;
+        this[`title color`] = titleColor;
     };
 
+    // -----------------
+    // - Loc methods
     contains(item) {
         // Includes doesn't work because it can't access the Item object's properties and still iterate on that object's parent array.
         // Reference: https://stackoverflow.com/questions/8217419/how-to-determine-if-a-javascript-array-contains-an-object-with-an-attribute-that
@@ -71,6 +63,12 @@ class Loc extends Item {
 
         //returns true if any objects within the array have a matching name value
         return this[`items within`].some(seeking => seeking.name === item);
+    };
+
+    colorChange() {
+        // changes color variables based on what room this is called by.
+        root.style.setProperty(`--upright`, this["background color"]);
+        root.style.setProperty(`--upright-faded`, this["background color"]);
     };
 
     describeItems() {
@@ -129,11 +127,16 @@ class Loc extends Item {
     };
 };
 
-// item ojects
-//   name
-//   description
-//   location
-//   fixed in place boolean
+// ************************
+// * class objects
+// ************************
+
+// -----------------
+// - item ojects
+//      name
+//      description
+//      location
+//      fixed in place boolean
 const paperBox = new Item(
     `the paper box`,
     `a paper box, empty and blue in color`,
@@ -207,11 +210,18 @@ const glassCup = new Item(
     false 
 );
 
-// location objects
-//   name
-//   description
-//   array of exits
-//   item objects in the room
+// -----------------
+// - location objects
+//      name
+//      description
+//      array of exits
+//      item's within - objects in the room
+//      isLocked - boolean
+//      lock type
+//      clue - for lock
+//      items for entrance - needed items for lock
+//      background color - hex for site
+//      title color - hex for site
 const blueRoom = new Loc(
     `the blue room`,
     `a tranquil room painted blue`,
@@ -219,7 +229,10 @@ const blueRoom = new Loc(
     [paperBox, silverSword, shinyShell],
     false,
     undefined,
-    []
+    undefined,
+    [],
+    `#17c9ff`,
+    `#066f8f`
 );
 const yellowRoom = new Loc(
     'the yellow room',
@@ -228,7 +241,10 @@ const yellowRoom = new Loc(
     [smallPyramid, goldenScarab, brittleSpear],
     false,
     undefined,
-    []
+    undefined,
+    [],
+    `#d3a716`,
+    `#997a13`
 );
 const redRoom = new Loc(
     `the red room`,
@@ -237,7 +253,10 @@ const redRoom = new Loc(
     [velvetCloth, obsidianRock, wovenCloak],
     false,
     undefined,
-    []
+    undefined,
+    [],
+    `#a7260f`,
+    `#a12c17`
 );
 const greenRoom = new Loc(
     'the green room',
@@ -246,7 +265,10 @@ const greenRoom = new Loc(
     [stoneCylinder, grayPebble, glassCup],
     false,
     undefined,
-    []
+    undefined,
+    [],
+    `#499c38`,
+    `#326e25`
 );
 const purpleRoom = new Loc(
     'the purple room',
@@ -254,13 +276,19 @@ const purpleRoom = new Loc(
     [`the green room`],
     [],
     true,
-    [`a magical lock, for your own safety`, `an adventurer's garb and gear`],
-    [`the silver sword`, `the woven cloak`]
+    `magical lock`,
+    `an adventurer's garb and gear`,
+    [`the silver sword`, `the woven cloak`],
+    `#834bb8`,
+    `#6a3d94`
 );
 
-//dictionaries and inventory
+// ************************
+// * dictionaries, containers and machines
+// ************************
+
+//dictionary for rooms
 const locationDict = {blueRoom, yellowRoom, redRoom, greenRoom, purpleRoom};
-const playerInventory = [];
 
 // dictionary for spelling variations
 const spellingDict = {
@@ -288,7 +316,10 @@ const spellingDict = {
     'the glass cup': [`the glass cup`, `a glass cup`, `glass cup`, `the blown cup`, `a blown cup`, `blown cup`, `the cup`, `a cup`, `cup`,]
 };
 
-// state maching
+// player inventory
+const playerInventory = [];
+
+// state machine
 const roomState = {
     'the blue room': [`the yellow room`],
     'the yellow room': [`the red room`, `the green room`, `the blue room`],
@@ -297,50 +328,34 @@ const roomState = {
     'the purple room': [`the green room`]
 };
 
+// ************************
+// * global variables
+// ************************
+
 // variables are global so they can be accessed from anywhere
 let currentRoom = `the blue room`;
 
 let roomVar;
+let otherRoomVar
 let itemI;
 
 let room;
+let otherRoom;
 let item;
 
+// css color variables to starting color.
+let root = document.querySelector(`:root`);
+root.style.setProperty(`--upright`, `#17c9ff`);
+root.style.setProperty(`--upright-faded`, `#066f8f`);
+
+// ************************
+// * Main logic function
+// ************************
 
 export const domDisplay = (playerInput) => {
-    /* 
-        TODO: for students
-        - This function must return a string. 
-        - This will be the information that is displayed within the browsers game interface above the users input field.
-
-        - This function name cannot be altered. 
-        - "playerInput" is whatever text the user is typing within the input field in the browser after hitting the ENTER key.
-            - test this out with a console log.
-
-        What your player should be able to do (checklist):
-            - move between rooms
-            - view current room
-            - pickup moveable items
-                - there should be at least 2 items that cannot be moved.
-            - view player inventory
-        
-        Stretch Goals:
-            - drop items in "current room" (if a player picks up an item in one room and moves to another, they should be able to remove it from their inventory)
-            - create win/lose conditions.
-                - this could be a puzzle that may require an item to be within the players inventory to move forward, etc.
-
-        HINTS:
-            - consider the various methods that are available to use.
-            - arrays are a great way to hold "lists".
-            - You are not limited to just the exported function. Build additional functions and don't forget to hold the return within a variable.
-            - Review notes!
-                - Have them open as you build.
-                - break down each problem into small chunks
-                    - What is the process of picking up an item exactly? ex: Look. Pick from a list of items. Put into players list of items... 
-    */
 
     // return variable
-    let output;
+    let output = ``;
 
     // tracks whether the room needs to be described again
     let justDescribedRoom = false;
@@ -355,6 +370,7 @@ export const domDisplay = (playerInput) => {
         
         // -----------------
         // - Move to action
+        // -----------------
 
         case `move to`:
 
@@ -365,16 +381,40 @@ export const domDisplay = (playerInput) => {
             // if room can be accessed from this room via roomState
             } else if (roomState[currentRoom].includes(target)) {
 
-                //change current room to target room
-                currentRoom = target;
+                // if room is locked and all items need to enter room are NOT in inventory
+                if (otherRoom.isLocked && !otherRoom[`items for entrance`].every(loc => itemIsInInventory(loc))) {
+                    
+                    // output text and do not move
+                    output = `This exit is blocked by a ${otherRoom[`lock type`]}. To pass, you'll need ${otherRoom.clue}.`;
 
-                //set property access variables to new room
-                roomVarSetup(target);
+                // if room is locked and all items need to enter room ARE in inventory
+                } else if (otherRoom.isLocked && otherRoom[`items for entrance`].every(loc => itemIsInInventory(loc))) {
+                    
+                    // if moving into final room, output congratulations message
+                    if (otherRoom.name === `the purple room`) {
+                        // moveRooms with no returned output.
+                        moveRooms(target);
 
-                output = `What you see before you is ${room.description}. ${room.describeItems()}. ${room.describeExits()}.`;
-                // indicates no need to add description to output
-                justDescribedRoom = true;
+                        return `Congratulations! You made it! You used ${otherRoom.clue} to break through the ${otherRoom[`lock type`]}, and into ${target}! ${' ...'.repeat(20)} You have escaped the World of Colors!`;
 
+                    // if moving into any non-final room, moveRooms() and display message of success
+                    } else {
+                        output = `You used ${otherRoom.clue} to break through the ${otherRoom[`lock type`]}, and into ${target}!${' ...'.repeat(20)} ${moveRooms(target)}`;
+
+                        // indicates no need to add description to output
+                        justDescribedRoom = true;
+                    };
+
+                // if room is not locked, moveRooms()
+                } else if (!otherRoom.isLocked) {
+                    
+                    // moves rooms, changes colors and outputs text
+                    output = moveRooms(target);
+
+                    // indicates no need to add description to output
+                    justDescribedRoom = true;
+                };
+                    
             // if room exists but can't be accessed via roomState
             } else {
                 output = `You can't get to ${target} from ${currentRoom}...`;
@@ -383,6 +423,7 @@ export const domDisplay = (playerInput) => {
 
         // -----------------
         // - Look at action
+        // -----------------
 
         case `look at`:
 
@@ -429,6 +470,7 @@ export const domDisplay = (playerInput) => {
 
         // -----------------
         // - Pick up action
+        // -----------------
 
         case `pick up`:
 
@@ -441,7 +483,7 @@ export const domDisplay = (playerInput) => {
                 output = `You can't pick up ${target} from ${currentRoom}...`
 
             // if item is in location and not fixed in place
-            } else if (room.contains(target) && !item.isFixed()) {
+            } else if (room.contains(target) && !item.fixed) {
          
                 // change location property within item to inventory
                 item.location = `inventory`;
@@ -462,6 +504,7 @@ export const domDisplay = (playerInput) => {
 
         // -----------------
         // - Put down action
+        // -----------------
 
         case `put down`:
 
@@ -491,6 +534,7 @@ export const domDisplay = (playerInput) => {
             
         // -----------------
         // - Check inventory action
+        // -----------------
 
         case `check inventory`:
 
@@ -531,6 +575,7 @@ export const domDisplay = (playerInput) => {
 
         // -----------------
         // - Default action
+        // -----------------
 
         default:
             output = `I don't know how to ${playerInput}.`;
@@ -539,10 +584,18 @@ export const domDisplay = (playerInput) => {
 
     //if the room hasn't been described in this output, add the description
     if (!justDescribedRoom) {
-        output += `${' ...'.repeat(20)} You look back up and see ${room.description}. ${room.describeItems()}. ${room.describeExits()}.`
+        output += `${' ...'.repeat(20)} You look back up and see ${room.description}.${' ...'.repeat(5)} ${room.describeItems()}.${' ...'.repeat(5)} ${room.describeExits()}.`
     }
     return parseOutput(output);
 };
+
+// ************************
+// * functions
+// ************************
+
+// -----------------
+// - parseInput()
+// -----------------
 
 // parses input
 function parseInput(input) {
@@ -567,9 +620,13 @@ function parseInput(input) {
         }
     };
 
-    // returns action variables joined with a space, and target
+    // returns action variables joined with a space, and target, to be destructured
     return [actionA + ` ` + actionB, targetString];
 };
+
+// -----------------
+// - parseOutput()
+// -----------------
 
 // capitalizes beginning of sentences for output
 function parseOutput(output) {
@@ -619,6 +676,10 @@ function parseOutput(output) {
     return words.join(` `);
 };
 
+// -----------------
+// - roomVarSetup()
+// -----------------
+
 function roomVarSetup(itemString) {
 
     // -----------------
@@ -632,6 +693,12 @@ function roomVarSetup(itemString) {
 
     // GLOBAL: stores room object's location in the location object.
     room = locationDict[roomVar];
+
+    // if the action/itemString is a room, and not the same as currentRoom, set up variables to store variable and location, same as above
+    if (Object.keys(roomState).includes(itemString) && itemString !== currentRoom) {
+        otherRoomVar = keysArray.find(loc => locationDict[loc].name === itemString);
+        otherRoom = locationDict[otherRoomVar]
+    };
 
     // -----------------
     // - Item setup
@@ -660,6 +727,28 @@ function roomVarSetup(itemString) {
 
 };
 
+// -----------------
+// - moveRooms()
+// -----------------
+
+function moveRooms(targetString) {
+
+    //change current room to target room
+    currentRoom = targetString;
+                    
+    //set property access variables to new room
+    roomVarSetup(targetString);
+    
+    // changes color to new room's color
+    room.colorChange();
+    
+    return `What you see before you is ${room.description}.${' ...'.repeat(5)} ${room.describeItems()}.${' ...'.repeat(5)} ${room.describeExits()}.`;
+};
+
+// -----------------
+// - itemIsInRoom()
+// -----------------
+
 // returns true if item name exists in any item, in any location
 function itemIsInRoom(itemString) {
     // holds room variable names
@@ -678,22 +767,13 @@ function itemIsInRoom(itemString) {
     });
 };
 
+// -----------------
+// - itemIsInInventory()
+// -----------------
+
 // returns true if the item can be found in the inventory
 function itemIsInInventory(itemString) {
 
     // checks every item in inventory to see if the item's name value matches the string
     return playerInventory.some(item => item.name === itemString);
 };
-
-// * testing logs
-//? object keys test
-// console.log(`****object keys test`, Object.keys(locationDict));
-
-//? property access test/reference
-// console.log(`item within locations access test`, locationDict.blueRoom[`items within`][1].name);
-
-//? roomVariable() test
-// console.log(`****roomVariable() test`, locationDict[roomVariable(currentRoom)]);
-
-// can I put more functions as methods
-// 
